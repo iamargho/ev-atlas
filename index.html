@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111b">
+  <meta name="description" content="Explore electric vehicle market performance and insights through an interactive dashboard and data story.">
+  <title>EV Atlas — Electric Vehicle Market</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #10251f;
+      --panel: #ffffff;
+      --panel-soft: #f3f8f3;
+      --white: #10251f;
+      --muted: #71817a;
+      --lime: #a6d832;
+      --accent-ink: #527516;
+      --cyan: #159d91;
+      --line: rgba(22, 64, 48, .14);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--white);
+      background: #f5f8f2;
+      font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body::before {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none; content: "";
+      background: radial-gradient(ellipse at 80% 4%, rgba(88, 182, 157, .12), transparent 35%),
+                  radial-gradient(ellipse at 8% 55%, rgba(175, 211, 92, .11), transparent 32%);
+    }
+    ::selection { color: var(--ink); background: var(--lime); }
+    a { color: inherit; }
+    .shell { width: min(1440px, calc(100% - 64px)); margin: 0 auto; }
+    .topbar { position: sticky; top: 0; z-index: 10; min-height: 76px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); background: rgba(245,248,242,.88); backdrop-filter: blur(18px); }
+    .brand { display: inline-flex; align-items: center; gap: 11px; font-size: .88rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    .brand-mark { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 11px; color: var(--ink); background: var(--lime); font-size: 1.15rem; box-shadow: 0 5px 16px rgba(106,150,26,.22); }
+    .brand small { display: block; margin-top: -2px; color: var(--muted); font: 500 .58rem/1.2 var(--mono); letter-spacing: .12em; }
+    .top-meta { display: flex; align-items: center; gap: 10px; color: #60736b; font: .72rem var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .pulse { width: 7px; height: 7px; border-radius: 50%; background: #7eb722; box-shadow: 0 0 13px rgba(126,183,34,.55); }
+    .hero { position: relative; display: grid; grid-template-columns: 1.08fr .92fr; align-items: center; gap: 48px; min-height: 460px; padding: 62px 0 57px; }
+    .hero::after { position: absolute; z-index: -1; content: "EV"; right: 26%; bottom: -24px; color: rgba(221,246,229,.025); font-size: clamp(11rem, 24vw, 23rem); font-weight: 850; letter-spacing: -.12em; line-height: .8; pointer-events: none; }
+    .eyebrow { display: flex; align-items: center; gap: 11px; margin: 0 0 18px; color: var(--accent-ink); font: 700 .72rem var(--mono); letter-spacing: .16em; text-transform: uppercase; }
+    .eyebrow::before { content: ""; width: 27px; height: 1px; background: var(--lime); }
+    h1 { max-width: 740px; margin: 0; font-size: clamp(3rem, 6.6vw, 6.4rem); line-height: .91; letter-spacing: -.075em; font-weight: 760; }
+    h1 span { display: block; color: var(--accent-ink); }
+    .hero-copy { max-width: 520px; margin: 23px 0 0; color: #61736c; font-size: 1rem; }
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 28px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 45px; padding: 0 17px; border: 1px solid transparent; border-radius: 6px; background: var(--ink); color: #f8fff4; text-decoration: none; font-size: .82rem; font-weight: 750; transition: transform .2s, background .2s; }
+    .button:hover { transform: translateY(-2px); background: #264c3a; }
+    .button.secondary { color: var(--ink); border-color: var(--line); background: rgba(255,255,255,.55); }
+    .button.secondary:hover { border-color: rgba(21,157,145,.45); background: rgba(21,157,145,.06); }
+    .arrow { font-size: 1rem; }
+    .hero-art { position: relative; min-height: 325px; display: grid; place-items: center; overflow: hidden; border: 1px solid rgba(22,64,48,.13); border-radius: 16px; background: radial-gradient(ellipse at 50% 55%, rgba(81,190,165,.18), transparent 46%), linear-gradient(145deg, #ffffff, #edf5e9); box-shadow: inset 0 1px #fff, 0 30px 70px rgba(38,80,54,.1); }
+    .hero-art::after { position: absolute; content: ""; width: 170px; height: 170px; right: 12%; top: 15%; border-radius: 50%; background: rgba(199,232,105,.36); filter: blur(70px); }
+    .hero-art::before { position: absolute; inset: 0; content: ""; opacity: .72; background-image: linear-gradient(rgba(59,116,92,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(59,116,92,.08) 1px, transparent 1px); background-size: 34px 34px; mask-image: linear-gradient(to bottom, black, transparent 90%); }
+    .orbit { position: absolute; width: 330px; height: 190px; border: 1px solid rgba(21,157,145,.32); border-radius: 50%; transform: rotate(-25deg); animation: drift 12s ease-in-out infinite alternate; }
+    @keyframes drift { to { transform: rotate(-18deg) scale(1.06); } }
+    .orbit::before, .orbit::after { position: absolute; content: ""; border: 1px solid rgba(21,157,145,.18); border-radius: 50%; inset: 18px -18px; }
+    .orbit::after { inset: -18px 20px; transform: rotate(50deg); }
+    .art-label { position: absolute; z-index: 2; top: 20px; left: 22px; color: #70837b; font: .65rem var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    .art-index { position: absolute; right: 20px; bottom: 18px; color: #6b9020; font: .68rem var(--mono); letter-spacing: .12em; }
+    .art-coordinate { position: absolute; z-index: 2; top: 50%; right: 19px; color: rgba(51,91,76,.55); font: .58rem var(--mono); letter-spacing: .1em; writing-mode: vertical-rl; }
+    .hero-caption { display: flex; align-items: center; gap: 9px; margin-top: 15px; color: #71847b; font: .63rem var(--mono); letter-spacing: .11em; text-transform: uppercase; }
+    .hero-caption::before { content: ""; width: 20px; height: 1px; background: var(--cyan); }
+    .ticker { display: flex; align-items: center; gap: 0; overflow: hidden; margin: 0 0 25px; border-block: 1px solid var(--line); color: #64776e; font: .65rem var(--mono); letter-spacing: .13em; text-transform: uppercase; }
+    .ticker span { display: inline-flex; flex: 1; align-items: center; justify-content: space-around; gap: 18px; padding: 13px 0; white-space: nowrap; }
+    .ticker i { color: var(--accent-ink); font-style: normal; }
+    .car { position: relative; z-index: 1; width: min(82%, 410px); filter: drop-shadow(0 18px 22px rgba(0,0,0,.5)); }
+    .car-line { fill: rgba(100,232,223,.075); stroke: var(--cyan); stroke-width: 2; stroke-linejoin: round; }
+    .car-detail { fill: none; stroke: rgba(199,255,88,.8); stroke-width: 1.5; stroke-linecap: round; }
+    .wheel { fill: #09141e; stroke: var(--lime); stroke-width: 2; }
+    .section-nav { position: sticky; top: 88px; z-index: 8; display: flex; align-items: center; gap: 5px; padding: 6px; margin: 3px 0 20px; border: 1px solid var(--line); border-radius: 9px; background: rgba(255,255,255,.9); backdrop-filter: blur(14px); width: fit-content; box-shadow: 0 10px 30px rgba(37,74,51,.1); }
+    .section-nav a { display: inline-flex; gap: 9px; align-items: center; padding: 9px 14px; border-radius: 5px; color: #61736b; text-decoration: none; font-size: .8rem; transition: color .2s, background .2s; }
+    .section-nav a:hover, .section-nav a:focus-visible, .section-nav a.is-active { color: #477014; background: rgba(166,216,50,.16); outline: none; }
+    .section-nav b { color: var(--accent-ink); font: .64rem var(--mono); }
+    .viz-section { position: relative; margin: 0 0 42px; overflow: hidden; border: 1px solid rgba(22,64,48,.13); border-radius: 12px; background: var(--panel); box-shadow: 0 24px 60px rgba(38,80,54,.1); scroll-margin-top: 150px; }
+    .viz-section::before { position: absolute; z-index: 2; top: 0; left: 22px; right: 22px; height: 1px; content: ""; background: linear-gradient(90deg, var(--lime), rgba(100,232,223,.36), transparent 72%); }
+    .viz-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 19px 22px; border-bottom: 1px solid var(--line); }
+    .viz-heading-left { display: flex; align-items: center; gap: 14px; }
+    .viz-number { display: grid; width: 38px; height: 38px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(199,255,88,.25); border-radius: 9px; color: var(--lime); font: .72rem var(--mono); }
+    .viz-heading h2 { margin: 0; font-size: 1rem; letter-spacing: -.01em; }
+    .viz-heading p { margin: 3px 0 0; color: var(--muted); font-size: .76rem; }
+    .viz-tag { padding: 7px 10px; border: 1px solid var(--line); border-radius: 5px; color: #60746b; background: #f6faf3; font: .62rem var(--mono); letter-spacing: .09em; text-transform: uppercase; white-space: nowrap; }
+    .viz-wrap { position: relative; background: #fff; }
+    .tableauPlaceholder { position: relative; width: 100%; aspect-ratio: 4 / 3; min-height: 620px; background: #fff; }
+    .tableauPlaceholder iframe { display: block; width: 100%; height: 100%; min-height: 620px; border: 0; }
+    #ev-market-dashboard { aspect-ratio: 1259 / 1627; min-height: 900px; }
+    #ev-market-dashboard iframe { min-height: 900px; }
+    .story-section { margin-top: 2px; }
+    .bottom-note { display: flex; justify-content: space-between; gap: 18px; padding: 0 0 27px; color: #71847b; font: .66rem var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+    .bottom-note span:last-child { text-align: right; }
+    @media (min-width: 1500px) { .hero { min-height: 480px; } }
+    @media (max-width: 800px) { .shell { width: min(100% - 38px, 1440px); } .hero { grid-template-columns: 1fr; gap: 30px; padding-top: 48px; } .hero-art { min-height: 260px; } h1 { font-size: clamp(3.2rem, 12vw, 5.8rem); } }
+    @media (max-width: 560px) {
+      .shell { width: calc(100% - 26px); }
+      .topbar { min-height: 68px; }
+      .brand { font-size: .78rem; }
+      .top-meta { font-size: .58rem; }
+      .hero { gap: 24px; padding: 41px 0 35px; }
+      .hero::after { right: 0; bottom: 75px; font-size: 10rem; }
+      .hero-copy { font-size: .9rem; }
+      .hero-art { min-height: 220px; }
+      .art-coordinate { right: 10px; }
+      .orbit { width: 260px; height: 140px; }
+      .section-nav { width: 100%; }
+      .ticker span { justify-content: flex-start; gap: 12px; padding: 11px 0; font-size: .56rem; }
+      .section-nav a { flex: 1; justify-content: center; padding: 9px 8px; }
+      .viz-section { margin-bottom: 25px; border-radius: 9px; }
+      .viz-heading { align-items: flex-start; padding: 14px; }
+      .viz-heading-left { gap: 10px; }
+      .viz-number { width: 32px; height: 32px; }
+      .viz-heading h2 { font-size: .88rem; }
+      .viz-heading p { max-width: 190px; font-size: .68rem; }
+      .viz-tag { display: none; }
+      .tableauPlaceholder { aspect-ratio: auto; min-height: 1727px; }
+      .tableauPlaceholder iframe { min-height: 1727px; }
+      #ev-market-dashboard { min-height: 2577px; }
+      #ev-market-dashboard iframe { min-height: 2577px; }
+      .bottom-note { flex-direction: column; gap: 6px; font-size: .59rem; }
+      .bottom-note span:last-child { text-align: left; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#top" style="text-decoration:none" aria-label="EV Atlas home">
+        <span class="brand-mark" aria-hidden="true">ϟ</span>
+        <span>EV ATLAS<small>MARKET INTELLIGENCE</small></span>
+      </a>
+      <div class="top-meta"><i class="pulse" aria-hidden="true"></i> Tableau Public · Interactive</div>
+    </header>
+
+    <section class="hero" id="top" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">The electric shift, in focus</p>
+        <h1 id="page-title">A market<br>in <span>motion.</span></h1>
+        <p class="hero-copy">Explore the forces shaping electric mobility. Move from the market overview into a guided story through the data.</p>
+        <div class="hero-actions">
+          <a class="button" href="#dashboard">Explore dashboard <span class="arrow" aria-hidden="true">↘</span></a>
+          <a class="button secondary" href="#story">View the story <span class="arrow" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <div class="hero-art" aria-label="Electric vehicle line illustration">
+        <span class="art-label">EV / 01 — The transition</span>
+        <span class="orbit" aria-hidden="true"></span>
+        <svg class="car" viewBox="0 0 440 220" role="img" aria-label="Stylized electric car">
+          <path class="car-line" d="M51 145h19l20-48c5-12 15-19 29-22l56-11 40-35c8-7 18-11 29-11h57c17 0 31 7 42 20l39 47 23 10c12 5 19 15 19 28v29h-22a34 34 0 0 0-67 0H149a34 34 0 0 0-67 0H51z"/>
+          <path class="car-detail" d="m128 74 52-10 36-32h43v44H118m156-44h24c11 0 20 5 28 14l25 30h-67zm-191 86h14m253 0h15M220 97v44m87-1H232"/>
+          <circle class="wheel" cx="115" cy="155" r="22"/><circle class="wheel" cx="329" cy="155" r="22"/>
+          <path class="car-detail" d="M111 155h8m206 0h8"/>
+          <path d="m203 103 9-17h17l-9 17h14l-24 29 7-21h-14z" fill="#c7ff58"/>
+        </svg>
+        <span class="art-coordinate">ELECTRIC MOBILITY / MARKET VIEW</span>
+        <span class="art-index">DATA · DRIVE · DISCOVER</span>
+      </div>
+    </section>
+
+    <div class="hero-caption">An interactive look at the changing road ahead</div>
+    <div class="ticker" aria-label="Market themes"><span>Electric mobility <i>✳</i> Market performance <i>✳</i> Industry insights <i>✳</i> The road ahead <i>✳</i></span></div>
+
+    <nav class="section-nav" aria-label="Page sections">
+      <a href="#dashboard"><b>01</b> Market dashboard</a>
+      <a href="#story"><b>02</b> The story</a>
+    </nav>
+
+    <section class="viz-section" id="dashboard" aria-labelledby="dashboard-title">
+      <div class="viz-heading">
+        <div class="viz-heading-left"><span class="viz-number">01</span><div><h2 id="dashboard-title">Market performance &amp; insights</h2><p>Explore the interactive dashboard and its controls</p></div></div>
+        <span class="viz-tag">Live Tableau view</span>
+      </div>
+      <div class="viz-wrap">
+        <div class="tableauPlaceholder" id="ev-market-dashboard">
+          <iframe title="Electric Vehicle Market performance and insights dashboard" src="https://public.tableau.com/views/project_evMarket1234/Dashboard1?:showVizHome=no&amp;:embed=true&amp;:language=en-US&amp;:toolbar=yes&amp;:tabs=no" loading="lazy" allowfullscreen></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section class="viz-section story-section" id="story" aria-labelledby="story-title">
+      <div class="viz-heading">
+        <div class="viz-heading-left"><span class="viz-number">02</span><div><h2 id="story-title">Electric vehicle market story</h2><p>Follow the narrative with Tableau's story controls</p></div></div>
+        <span class="viz-tag">Guided exploration</span>
+      </div>
+      <div class="viz-wrap">
+        <div class="tableauPlaceholder" id="ev-market-story">
+          <iframe title="Electric Vehicle Market story" src="https://public.tableau.com/views/project_evMarket12345/Story1?:showVizHome=no&amp;:embed=true&amp;:language=en-US&amp;:toolbar=yes&amp;:tabs=no" loading="lazy" allowfullscreen></iframe>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bottom-note"><span>EV Atlas · Electric mobility market explorer</span><span>Visualizations powered by Tableau Public</span></footer>
+  </main>
+  <script>
+    // Flux data flow: navigation action -> dispatcher -> store -> page UI.
+    const FluxDispatcher = (() => {
+      const callbacks = new Set();
+      return {
+        register(callback) { callbacks.add(callback); return () => callbacks.delete(callback); },
+        dispatch(action) { callbacks.forEach((callback) => callback(action)); }
+      };
+    })();
+
+    const NavigationActions = {
+      navigate(section, { updateAddress = true, scroll = true } = {}) {
+        FluxDispatcher.dispatch({ type: 'NAVIGATE', section, updateAddress, scroll });
+      }
+    };
+
+    const NavigationStore = (() => {
+      let currentSection = ['dashboard', 'story'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'dashboard';
+      let lastNavigation = { section: currentSection, scroll: false };
+      const listeners = new Set();
+      FluxDispatcher.register((action) => {
+        if (action.type !== 'NAVIGATE' || !['dashboard', 'story'].includes(action.section)) return;
+        currentSection = action.section;
+        lastNavigation = { section: currentSection, scroll: action.scroll };
+        if (action.updateAddress && location.hash !== `#${currentSection}`) {
+          history.pushState({ section: currentSection }, '', `#${currentSection}`);
+        }
+        listeners.forEach((listener) => listener());
+      });
+      return {
+        getState: () => ({ section: currentSection, ...lastNavigation }),
+        subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }
+      };
+    })();
+
+    const NavigationView = {
+      render() {
+        const state = NavigationStore.getState();
+        document.querySelectorAll('.section-nav a[href^="#"]').forEach((link) => {
+          const active = link.getAttribute('href') === `#${state.section}`;
+          link.classList.toggle('is-active', active);
+          if (active) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+        if (state.scroll) document.getElementById(state.section)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    NavigationStore.subscribe(() => NavigationView.render());
+    document.addEventListener('click', (event) => {
+      const link = event.target.closest('a[href^="#"]');
+      if (!link) return;
+      const section = link.getAttribute('href').slice(1);
+      if (!['dashboard', 'story'].includes(section)) return;
+      event.preventDefault();
+      NavigationActions.navigate(section);
+    });
+    window.addEventListener('popstate', () => {
+      const section = ['dashboard', 'story'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'dashboard';
+      NavigationActions.navigate(section, { updateAddress: false });
+    });
+    NavigationView.render();
+  </script>
+</body>
+</html>
